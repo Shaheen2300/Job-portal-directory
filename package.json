@@ -1,0 +1,12 @@
+{
+  "name": "h1b-sponsor-directory",
+  "version": "1.0.0",
+  "description": "Filterable directory of H-1B sponsors built from real USCIS H-1B Employer Data Hub data.",
+  "private": true,
+  "scripts": {
+    "start": "serve . -l 3000"
+  },
+  "devDependencies": {
+    "serve": "^14.2.3"
+  }
+}

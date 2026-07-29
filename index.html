@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H-1B Sponsor Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #ECE6D6;
+    --card: #F7F3E8;
+    --ink: #26241E;
+    --ink-soft: #5B5648;
+    --navy: #2C3E63;
+    --red: #A63A2E;
+    --gold: #B08B4F;
+    --line: rgba(38,36,30,0.16);
+    --line-strong: rgba(38,36,30,0.32);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(rgba(38,36,30,0.035) 1px, transparent 1px);
+    background-size:3px 3px;
+    pointer-events:none;
+    z-index:0;
+  }
+  .wrap{
+    position:relative; z-index:1;
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  /* ---- Header / case-file block ---- */
+  .case-header{
+    border:1.5px solid var(--line-strong);
+    background:var(--card);
+    padding:22px 24px;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'Courier Prime', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    border-bottom:1px dashed var(--line-strong);
+    padding-bottom:10px;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Courier Prime', monospace;
+    font-weight:700;
+    font-size:clamp(28px, 4.4vw, 44px);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    max-width:640px;
+    line-height:1.5;
+    margin:0;
+  }
+  .stat-strip{
+    display:flex; flex-wrap:wrap; gap:0;
+    margin-top:18px;
+    border-top:1.5px solid var(--line-strong);
+  }
+  .stat{
+    flex:1 1 120px;
+    padding:12px 16px;
+    border-right:1px solid var(--line);
+  }
+  .stat:last-child{border-right:none;}
+  .stat .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:20px;
+    display:block;
+  }
+  .stat .lbl{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+  }
+  .stat.l .num{color:var(--red);}
+  .stat.m .num{color:var(--navy);}
+  .stat.s .num{color:var(--gold);}
+
+  /* ---- Filter panel ---- */
+  .panel{
+    margin-top:18px;
+    border:1.5px solid var(--line-strong);
+    background:var(--card);
+    padding:18px 22px;
+  }
+  .panel-row{
+    display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center;
+  }
+  .panel-row + .panel-row{margin-top:14px;}
+  .panel-label{
+    font-family:'Courier Prime', monospace;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    width:88px;
+    flex:0 0 auto;
+  }
+  .tab-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    padding:7px 13px;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    border-radius:2px;
+    transition:background .12s, color .12s, border-color .12s;
+  }
+  .tab-btn:hover{border-color:var(--navy);}
+  .tab-btn.active{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#F7F3E8;
+  }
+  .tab-btn.active.red{background:var(--red); border-color:var(--red);}
+  .tab-btn .count{opacity:0.6; margin-left:4px;}
+
+  select, input[type="text"]{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13.5px;
+    padding:8px 10px;
+    border:1px solid var(--line-strong);
+    background:#fff;
+    color:var(--ink);
+    border-radius:2px;
+  }
+  select:focus, input:focus, .tab-btn:focus-visible{
+    outline:2px solid var(--navy);
+    outline-offset:1px;
+  }
+  input[type="text"]{width:100%; max-width:340px;}
+
+  .results-line{
+    margin-top:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;
+  }
+  .results-line b{color:var(--ink); font-weight:600;}
+
+  /* ---- Table / ledger ---- */
+  .ledger{
+    margin-top:10px;
+    border:1.5px solid var(--line-strong);
+    background:var(--card);
+  }
+  .ledger-head, .ledger-row{
+    display:grid;
+    grid-template-columns: 1fr 70px 150px 90px 130px;
+    gap:10px;
+    align-items:center;
+    padding:11px 16px;
+  }
+  .ledger-head{
+    font-family:'Courier Prime', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    border-bottom:1.5px solid var(--line-strong);
+    position:sticky; top:0; background:var(--card);
+  }
+  .ledger-row{
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .ledger-row:nth-child(even){background:rgba(176,139,79,0.06);}
+  .ledger-row:hover{background:rgba(44,62,99,0.07);}
+  .co-name{font-weight:500; word-break:break-word;}
+  .co-loc{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--ink-soft);}
+  .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    padding:3px 7px;
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    display:inline-block;
+    white-space:nowrap;
+  }
+  .petitions{font-family:'IBM Plex Mono', monospace; text-align:right; padding-right:8px;}
+  .career-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--navy);
+    text-decoration:none;
+    border-bottom:1px solid var(--navy);
+    white-space:nowrap;
+  }
+  .career-link:hover{color:var(--red); border-color:var(--red);}
+
+  /* stamp badge - signature element */
+  .stamp{
+    font-family:'Courier Prime', monospace;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    display:inline-block;
+    padding:4px 9px;
+    border:2px solid;
+    border-radius:3px;
+    transform:rotate(-4deg);
+    white-space:nowrap;
+  }
+  .stamp.L{color:var(--red); border-color:var(--red);}
+  .stamp.M{color:var(--navy); border-color:var(--navy);}
+  .stamp.S{color:var(--gold); border-color:var(--gold);}
+
+  .empty-state{
+    padding:60px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'Courier Prime', monospace;
+  }
+
+  .pager{
+    display:flex; justify-content:center; align-items:center; gap:14px;
+    margin-top:16px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+  .pager button{
+    font-family:'IBM Plex Mono', monospace;
+    padding:7px 14px;
+    border:1px solid var(--line-strong);
+    background:var(--card);
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .pager button:disabled{opacity:0.35; cursor:default;}
+  .pager button:hover:not(:disabled){border-color:var(--navy);}
+
+  footer.note{
+    margin-top:22px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    border-top:1px dashed var(--line-strong);
+    padding-top:14px;
+  }
+
+  @media (max-width: 760px){
+    .ledger-head{display:none;}
+    .ledger-row{
+      grid-template-columns: 1fr;
+      gap:6px;
+      padding:14px 16px;
+    }
+    .petitions{text-align:left; padding-right:0;}
+    .panel-label{width:auto; margin-right:4px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="case-header">
+    <div class="eyebrow">
+      <span>USCIS FORM I-129 &middot; PETITIONER RECORD</span>
+      <span id="fyLabel">FISCAL YEAR ON FILE</span>
+    </div>
+    <h1>H-1B Sponsor Directory</h1>
+    <p class="subtitle">Every employer that filed an H-1B petition this fiscal year, sorted by field and sponsorship scale, so you can find companies actually hiring in your line of work &mdash; then jump straight to their careers page.</p>
+    <div class="stat-strip" id="statStrip"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-row">
+      <span class="panel-label">Field</span>
+      <div id="catTabs"></div>
+    </div>
+    <div class="panel-row">
+      <span class="panel-label">Scale</span>
+      <div id="tierTabs"></div>
+    </div>
+    <div class="panel-row">
+      <span class="panel-label">State</span>
+      <select id="stateSelect"><option value="">All states</option></select>
+      <span class="panel-label" style="width:auto;margin-left:14px;">Search</span>
+      <input type="text" id="searchBox" placeholder="Company name contains&hellip;">
+    </div>
+  </div>
+
+  <div class="results-line">
+    <span><b id="resultCount">0</b> sponsors match your filters</span>
+    <span id="sortLabel">sorted by petitions, high to low</span>
+  </div>
+
+  <div class="ledger">
+    <div class="ledger-head">
+      <span>Employer</span>
+      <span>State</span>
+      <span>Field</span>
+      <span>Scale</span>
+      <span>Petitions / Careers</span>
+    </div>
+    <div id="rows"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">No sponsors match these filters. Try widening your search.</div>
+  </div>
+
+  <div class="pager">
+    <button id="prevBtn">&larr; Prev</button>
+    <span id="pageLabel">Page 1</span>
+    <button id="nextBtn">Next &rarr;</button>
+  </div>
+
+  <footer class="note">
+    Source: USCIS H-1B Employer Data Hub (uscis.gov), employer-level file for the current fiscal year on record. "Scale" is derived from each employer's total approved petitions in this file (Small: 1&ndash;4, Mid: 5&ndash;24, Large: 25+) &mdash; a proxy for H-1B hiring volume, not company revenue or headcount. "Field" is inferred from each employer's reported industry (NAICS) code, refined by keyword matching on the company name where the code is broad; a handful of companies may be mis-bucketed. Careers links run a web search for "[company] careers" since USCIS does not publish employer websites.
+  </footer>
+</div>
+
+<script>
+(function(){
+  var DATA = [];
+  fetch('data.json')
+    .then(function(res){ return res.json(); })
+    .then(function(json){ DATA = json; boot(); })
+    .catch(function(err){
+      document.getElementById('rows').innerHTML =
+        '<div class="empty-state">Could not load data.json. Make sure you are running this through a local server (see README), not opening the file directly.</div>';
+      console.error(err);
+    });
+
+  function boot(){
+
+  var CAT_LABELS = {
+    all:'All fields', construction:'Construction', medical:'Medical', it:'IT',
+    eng:'Engineering', manufacturing:'Manufacturing', finance:'Finance',
+    trade:'Trade', education:'Education', other:'All / Other'
+  };
+  var TIER_LABELS = {all:'All scales', L:'Large', M:'Mid', S:'Small'};
+
+  var STATE_NAMES = {AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'D.C.',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',PR:'Puerto Rico'};
+
+  var state = {cat:'all', tier:'all', st:'', q:'', page:0, pageSize:40};
+
+  // ---- build stat strip ----
+  var totalCount = DATA.length;
+  var lCount=0,mCount=0,sCount=0;
+  var statesSeen = {};
+  for(var i=0;i<DATA.length;i++){
+    var t = DATA[i][3];
+    if(t==='L') lCount++; else if(t==='M') mCount++; else sCount++;
+    statesSeen[DATA[i][1]] = (statesSeen[DATA[i][1]]||0)+1;
+  }
+  document.getElementById('statStrip').innerHTML =
+    '<div class="stat"><span class="num">'+totalCount.toLocaleString()+'</span><span class="lbl">Total sponsors</span></div>'+
+    '<div class="stat l"><span class="num">'+lCount.toLocaleString()+'</span><span class="lbl">Large (25+ petitions)</span></div>'+
+    '<div class="stat m"><span class="num">'+mCount.toLocaleString()+'</span><span class="lbl">Mid (5&ndash;24)</span></div>'+
+    '<div class="stat s"><span class="num">'+sCount.toLocaleString()+'</span><span class="lbl">Small (1&ndash;4)</span></div>';
+
+  // ---- category counts ----
+  var catCounts = {all: DATA.length};
+  for(var i=0;i<DATA.length;i++){
+    var c = DATA[i][4];
+    catCounts[c] = (catCounts[c]||0)+1;
+  }
+  var catOrder = ['all','it','eng','medical','construction','manufacturing','finance','trade','education','other'];
+  var catTabsEl = document.getElementById('catTabs');
+  catOrder.forEach(function(c){
+    var btn = document.createElement('button');
+    btn.className = 'tab-btn' + (c==='all' ? ' active' : '');
+    btn.dataset.cat = c;
+    btn.innerHTML = CAT_LABELS[c] + ' <span class="count">'+(catCounts[c]||0).toLocaleString()+'</span>';
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#catTabs .tab-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active');
+      state.cat = this.dataset.cat; state.page = 0; render();
+    });
+    catTabsEl.appendChild(btn);
+  });
+
+  // ---- tier tabs ----
+  var tierTabsEl = document.getElementById('tierTabs');
+  ['all','L','M','S'].forEach(function(t){
+    var btn = document.createElement('button');
+    btn.className = 'tab-btn' + (t==='all' ? ' active red' : '');
+    btn.dataset.tier = t;
+    var n = t==='all'? totalCount : (t==='L'?lCount:t==='M'?mCount:sCount);
+    btn.innerHTML = TIER_LABELS[t] + ' <span class="count">'+n.toLocaleString()+'</span>';
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#tierTabs .tab-btn').forEach(function(b){b.classList.remove('active','red');});
+      this.classList.add('active','red');
+      state.tier = this.dataset.tier; state.page = 0; render();
+    });
+    tierTabsEl.appendChild(btn);
+  });
+
+  // ---- state select ----
+  var stateSelect = document.getElementById('stateSelect');
+  Object.keys(statesSeen).sort(function(a,b){
+    return (STATE_NAMES[a]||a).localeCompare(STATE_NAMES[b]||b);
+  }).forEach(function(st){
+    var opt = document.createElement('option');
+    opt.value = st;
+    opt.textContent = (STATE_NAMES[st]||st) + ' (' + statesSeen[st].toLocaleString() + ')';
+    stateSelect.appendChild(opt);
+  });
+  stateSelect.addEventListener('change', function(){
+    state.st = this.value; state.page = 0; render();
+  });
+
+  // ---- search ----
+  var searchTimer;
+  document.getElementById('searchBox').addEventListener('input', function(){
+    var val = this.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function(){
+      state.q = val.trim().toUpperCase(); state.page = 0; render();
+    }, 180);
+  });
+
+  // ---- pager ----
+  document.getElementById('prevBtn').addEventListener('click', function(){
+    if(state.page>0){ state.page--; render(); window.scrollTo({top:0, behavior:'smooth'}); }
+  });
+  document.getElementById('nextBtn').addEventListener('click', function(){
+    state.page++; render(); window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  function careerUrl(name){
+    return 'https://www.google.com/search?q=' + encodeURIComponent(name + ' careers');
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  var TIER_FULL = {L:'Large', M:'Mid', S:'Small'};
+
+  function filtered(){
+    return DATA.filter(function(r){
+      if(state.cat!=='all' && r[4]!==state.cat) return false;
+      if(state.tier!=='all' && r[3]!==state.tier) return false;
+      if(state.st && r[1]!==state.st) return false;
+      if(state.q && r[0].indexOf(state.q)===-1) return false;
+      return true;
+    });
+  }
+
+  function render(){
+    var rows = filtered();
+    rows.sort(function(a,b){ return b[2]-a[2]; });
+    document.getElementById('resultCount').textContent = rows.length.toLocaleString();
+
+    var totalPages = Math.max(1, Math.ceil(rows.length / state.pageSize));
+    if(state.page >= totalPages) state.page = totalPages-1;
+    if(state.page < 0) state.page = 0;
+    var start = state.page * state.pageSize;
+    var pageRows = rows.slice(start, start+state.pageSize);
+
+    var rowsEl = document.getElementById('rows');
+    var emptyEl = document.getElementById('emptyState');
+    if(pageRows.length===0){
+      rowsEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+    } else {
+      emptyEl.style.display = 'none';
+      var html = '';
+      for(var i=0;i<pageRows.length;i++){
+        var r = pageRows[i];
+        html += '<div class="ledger-row">' +
+          '<span class="co-name">'+escapeHtml(r[0])+'</span>' +
+          '<span class="co-loc">'+r[1]+'</span>' +
+          '<span class="tag">'+ (CAT_LABELS[r[4]]||r[4]) +'</span>' +
+          '<span class="stamp '+r[3]+'">'+TIER_FULL[r[3]]+'</span>' +
+          '<span class="petitions">'+r[2]+' pet. &middot; <a class="career-link" target="_blank" rel="noopener" href="'+careerUrl(r[0])+'">Careers &#8599;</a></span>' +
+          '</div>';
+      }
+      rowsEl.innerHTML = html;
+    }
+
+    document.getElementById('pageLabel').textContent = 'Page '+(state.page+1)+' of '+totalPages;
+    document.getElementById('prevBtn').disabled = state.page<=0;
+    document.getElementById('nextBtn').disabled = state.page>=totalPages-1;
+  }
+
+  render();
+  } // end boot
+})();
+</script>
+</body>
+</html>
