@@ -1,10 +1,16 @@
 # H-1B Sponsor Directory
 
 A filterable directory of real H-1B sponsors, built from the USCIS **H-1B Employer Data Hub**
-export you provided (`Employer_Information.csv`, current fiscal year on file).
+export (`Employer_Information.csv`, one fiscal year).
+
+**Live site: https://shaheen2300.github.io/Job-portal-directory/**
+
+Built for international students and job seekers who want a quick way to find
+employers with a real H-1B sponsorship track record, filtered by state, company
+size, and field.
 
 - **43,005 unique employers**, deduplicated and rolled up across every worksite/state they filed from
-- **Scale**: Small (1–4 approved petitions), Mid (5–24), Large (25+) — a proxy for H-1B hiring volume
+- **Scale**: Small (1–4 approved petitions, 35,696 employers), Mid (5–24, 6,100), Large (25+, 1,209), a proxy for H-1B hiring volume
 - **Field**: Construction, Medical, IT, Engineering, Manufacturing, Finance, Trade, Education, or
   Other/General — inferred from each employer's NAICS industry code, refined with name-keyword
   matching where the code is too broad (e.g. splitting "Professional/Scientific/Technical Services"
@@ -17,28 +23,19 @@ No backend, no build step — plain HTML/CSS/JS. `index.html` fetches `data.json
 ## Files
 
 ```
-h1b-sponsor-directory/
-├── index.html      the app
-├── data.json        the dataset (43,005 rows: [name, state, total_petitions, tier, category])
-├── package.json      one script: `npm start`
-├── .vscode/          recommends the Live Server extension, pre-set to port 5500
+Job-portal-directory/
+├── index.html      the app (HTML/CSS/JS, no framework)
+├── data.json       the dataset (43,005 rows: [name, state, total_petitions, tier, category])
+├── package.json    one script: `npm start`
+├── .vscode/        recommends the Live Server extension, pre-set to port 5500
 └── README.md
 ```
 
-## Run it on GitHub (no install needed) — recommended
+## Deployment
 
-This is a static site, so **GitHub Pages** is the easiest way to get it live. No `npm install`,
-no Codespaces, no server code.
-
-1. Create a new repository on GitHub (public — Pages needs a public repo unless you're on a paid plan)
-2. Upload these files: `index.html`, `data.json`, `README.md`, `package.json`, `.gitignore`
-   (skip `.vscode/` and `node_modules/` — neither is needed)
-3. Commit the upload
-4. Go to **Settings → Pages** in your repo
-5. Under "Build and deployment", set **Source: Deploy from a branch**, **Branch: main**, folder **/ (root)**, then **Save**
-6. Wait ~1 minute, then your app is live at `https://<your-username>.github.io/<repo-name>/`
-
-That's the whole deployment — no build step, because there isn't one.
+The site is served by **GitHub Pages** straight from the `main` branch root.
+There is no build step. To host your own copy, fork the repo, then set
+**Settings → Pages → Deploy from a branch → main / (root)**.
 
 ## Run it in a GitHub Codespace (alternative)
 
@@ -85,8 +82,8 @@ Then open `http://localhost:8000`.
 - `category`: `"construction"`, `"medical"`, `"it"`, `"eng"`, `"manufacturing"`, `"finance"`,
   `"trade"`, `"education"`, `"other"`
 
-To refresh with a new USCIS export (e.g. next fiscal year, or last-2-years combined), send me the
-new CSV and I'll regenerate `data.json` in this same shape — the app itself doesn't need to change.
+To refresh with a new USCIS export (e.g. the next fiscal year), regenerate `data.json` in this same
+shape. The app itself doesn't need to change.
 
 ## Known limitations
 
@@ -95,5 +92,4 @@ new CSV and I'll regenerate `data.json` in this same shape — the app itself do
   companies will land in the wrong category.
 - "Scale" reflects H-1B petition volume only, not company revenue, total headcount, or non-H-1B hiring.
 - Careers links are search links, not verified direct URLs — the source data doesn't include websites.
-- Only the fiscal year present in your uploaded file is included. Ask me to merge additional years
-  if you download more.
+- Only one fiscal year of USCIS data is included; multi-year roll-ups are a possible extension.
